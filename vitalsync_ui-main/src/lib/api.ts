@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'https://vitalsync-backend-o3oo.onrender.com';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  baseURL: BACKEND_URL,
 });
 
 export const saveHealthLog = (data: object) => api.post('/api/health-log', data);
