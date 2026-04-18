@@ -71,13 +71,32 @@ export default function Dashboard() {
   }, [profile?.id]);
 
   async function loadWeather() {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+    async function fetchWeather(lat: number, lng: number) {
       try {
-        const { data } = await getWeather(coords.latitude, coords.longitude);
+        const { data } = await getWeather(lat, lng);
         setWeather(data);
       } catch {}
-    });
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => fetchWeather(coords.latitude, coords.longitude),
+        async () => {
+          try {
+            const res = await fetch('https://ipapi.co/json/');
+            const ip = await res.json();
+            if (ip.latitude) fetchWeather(ip.latitude, ip.longitude);
+          } catch {}
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const ip = await res.json();
+        if (ip.latitude) fetchWeather(ip.latitude, ip.longitude);
+      } catch {}
+    }
   }
 
   const cards = [

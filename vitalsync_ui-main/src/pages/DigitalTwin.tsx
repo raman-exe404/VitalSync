@@ -46,14 +46,34 @@ const DigitalTwin = () => {
 
   // Auto-fill temperature from surrounding weather
   useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(async ({ coords }) => {
+    async function fetchWeather(lat: number, lng: number) {
       try {
-        const { data } = await getWeather(coords.latitude, coords.longitude);
+        const { data } = await getWeather(lat, lng);
         setLog((l) => ({ ...l, temperature: Math.round(data.temperature) }));
         setWeatherCity(data.city);
       } catch {}
-    });
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => fetchWeather(coords.latitude, coords.longitude),
+        async () => {
+          // GPS denied — fall back to IP location
+          try {
+            const res = await fetch('https://ipapi.co/json/');
+            const ip = await res.json();
+            if (ip.latitude && ip.longitude) fetchWeather(ip.latitude, ip.longitude);
+          } catch {}
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      // No geolocation API — use IP
+      fetch('https://ipapi.co/json/')
+        .then(r => r.json())
+        .then(ip => { if (ip.latitude) fetchWeather(ip.latitude, ip.longitude); })
+        .catch(() => {});
+    }
   }, []);
 
   const [profileForm, setProfileForm] = useState({
