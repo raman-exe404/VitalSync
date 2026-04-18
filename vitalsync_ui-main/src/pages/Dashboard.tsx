@@ -185,7 +185,7 @@ export default function Dashboard() {
                 <Wind className="w-5 h-5 text-secondary" />
               </div>
               <div className="flex-1">
-                <p className="font-heading font-bold text-foreground text-sm">{weather.temperature}°C — {weather.city}</p>
+                <p className="font-heading font-bold text-foreground text-sm">{weather.temperature}°C</p>
                 <p className="text-xs text-muted-foreground font-body capitalize">{weather.description}</p>
               </div>
               <div className="flex items-center gap-1 text-secondary">

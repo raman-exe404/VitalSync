@@ -190,7 +190,7 @@ const DigitalTwin = () => {
               <div className="flex-1">
                 <p className="font-body text-sm font-medium text-foreground">Surrounding Temperature</p>
                 {weatherCity
-                  ? <p className="font-heading font-bold text-xl text-foreground mt-0.5">{log.temperature}°C <span className="text-sm font-body text-muted-foreground font-normal">— {weatherCity}</span></p>
+                  ? <p className="font-heading font-bold text-xl text-foreground mt-0.5">{log.temperature}°C</p>
                   : <p className="text-sm text-muted-foreground font-body mt-0.5">Detecting your location...</p>
                 }
               </div>
