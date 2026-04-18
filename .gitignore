@@ -1,0 +1,50 @@
+# ── Environment files (API keys — NEVER commit these) ──
+.env
+.env.local
+.env.production
+.env.development
+*.env
+
+# ── Node.js ──
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
+.pnp.js
+
+# ── Python / ML ──
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.pkl
+*.joblib
+venv/
+env/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# ── Build outputs ──
+vitalsync_ui-main/dist/
+vitalsync_ui-main/.vite/
+sicklecare-ai/frontend/dist/
+
+# ── OS files ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ──
+.vscode/settings.json
+.idea/
+
+# ── Logs ──
+*.log
+logs/
+
+# ── Lock files (keep package-lock, ignore bun) ──
+bun.lockb

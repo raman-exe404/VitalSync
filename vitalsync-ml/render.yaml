@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: vitalsync-ml
+    runtime: python
+    rootDir: vitalsync-ml
+    buildCommand: pip install -r requirements.txt && python train.py
+    startCommand: python app.py

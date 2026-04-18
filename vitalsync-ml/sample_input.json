@@ -1,0 +1,9 @@
+{
+  "water_intake": 1.2,
+  "sleep_hours": 4,
+  "stress_level": 8,
+  "pain_level": 6,
+  "temperature": 18,
+  "humidity": 70,
+  "genotype": "HbSS"
+}
