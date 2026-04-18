@@ -58,14 +58,14 @@ const DigitalTwin = () => {
       navigator.geolocation.getCurrentPosition(
         ({ coords }) => fetchWeather(coords.latitude, coords.longitude),
         async () => {
-          // GPS denied — fall back to IP location
+          // GPS denied or failed — fall back to IP location
           try {
             const res = await fetch('https://ipapi.co/json/');
             const ip = await res.json();
             if (ip.latitude && ip.longitude) fetchWeather(ip.latitude, ip.longitude);
           } catch {}
         },
-        { timeout: 5000 }
+        { timeout: 15000, maximumAge: 60000, enableHighAccuracy: false }
       );
     } else {
       // No geolocation API — use IP

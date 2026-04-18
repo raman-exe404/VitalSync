@@ -88,7 +88,7 @@ export default function Dashboard() {
             if (ip.latitude) fetchWeather(ip.latitude, ip.longitude);
           } catch {}
         },
-        { timeout: 5000 }
+        { timeout: 15000, maximumAge: 60000, enableHighAccuracy: false }
       );
     } else {
       try {
