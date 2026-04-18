@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// v2 — points to Render backend
 const BACKEND_URL = import.meta.env.VITE_API_URL || 'https://vitalsync-backend-o3oo.onrender.com';
 
 const api = axios.create({
