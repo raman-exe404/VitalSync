@@ -4,21 +4,9 @@ const cors = require('cors');
 
 const app = express();
 
-const allowedOrigins = [
-  'http://localhost:8080',
-  'http://localhost:3000',
-  'https://vital-sync-alpha.vercel.app',
-  process.env.FRONTEND_URL,
-].filter(Boolean);
-
 app.use(cors({
-  origin: (origin, callback) => {
-    // allow requests with no origin (mobile apps, curl, Render health checks)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error(`CORS blocked: ${origin}`));
-  },
-  credentials: true,
+  origin: '*',
+  credentials: false,
 }));
 
 app.use(express.json());
