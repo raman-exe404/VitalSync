@@ -155,7 +155,7 @@ export default function Register() {
 
             <button onClick={handleCreateAccount} disabled={loading}
               className="clay-btn w-full py-3.5 text-base font-body font-bold flex items-center justify-center gap-2">
-              {loading ? "Creating..." : <><span>Continue</span><ArrowRight className="w-4 h-4" /></>}
+              {loading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Processing...</> : <><span>Continue</span><ArrowRight className="w-4 h-4" /></>}
             </button>
 
             <p className="text-center text-sm text-muted-foreground font-body">
@@ -259,7 +259,7 @@ export default function Register() {
 
             <button onClick={handleSaveProfile} disabled={loading}
               className="clay-btn w-full py-3.5 text-base font-body font-bold">
-              {loading ? "Creating account..." : "Create Account 🎉"}
+              {loading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Creating...</> : "Create Account 🎉"}
             </button>
 
             <button onClick={() => { setStep("account"); setError(""); }}

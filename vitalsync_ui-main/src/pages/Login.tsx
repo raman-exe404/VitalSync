@@ -90,7 +90,7 @@ export default function Login() {
 
         <button onClick={handleLogin} disabled={loading}
           className="clay-btn w-full py-3.5 text-base font-body font-bold flex items-center justify-center gap-2">
-          {loading ? "Signing in..." : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>}
+          {loading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Signing in...</> : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>}
         </button>
 
         <p className="text-center text-sm text-muted-foreground font-body mt-4">

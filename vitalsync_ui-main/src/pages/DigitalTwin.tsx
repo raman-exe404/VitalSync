@@ -228,7 +228,9 @@ const DigitalTwin = () => {
             )}
 
             <button onClick={handleLogSubmit} disabled={logLoading} className="clay-btn w-full py-3.5 flex items-center justify-center gap-2 text-base">
-              {logLoading ? "Saving..." : "Submit Health Log 📤"}
+              {logLoading
+                ? <><span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />Analyzing...</>
+                : "Submit Health Log 📤"}
             </button>
           </div>
         )}

@@ -139,7 +139,19 @@ const MedicalRecords = () => {
         {/* ── HEALTH LOG HISTORY ── */}
         <div className="clay-card p-6">
           <h2 className="font-heading text-lg font-bold text-foreground mb-4">Health Log History</h2>
-          {loading && <p className="text-muted-foreground font-body text-sm">Loading...</p>}
+          {loading && (
+            <div className="space-y-3">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="clay-card p-4 animate-pulse">
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-4 bg-muted rounded-full" />
+                    <div className="flex-1 h-4 bg-muted rounded-full" />
+                    <div className="w-20 h-4 bg-muted rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           {!loading && logs.length === 0 && (
             <p className="text-muted-foreground font-body text-sm">No logs yet. Use Digital Twin to log your health daily.</p>
           )}
