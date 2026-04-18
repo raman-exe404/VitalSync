@@ -7,7 +7,8 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:8080',
   'http://localhost:3000',
-  process.env.FRONTEND_URL, // set this on Render to your Vercel URL
+  'https://vital-sync-alpha.vercel.app',
+  process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 app.use(cors({
