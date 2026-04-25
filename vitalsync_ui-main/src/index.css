@@ -201,3 +201,8 @@
   0% { transform: scale(1); opacity: 0.6; }
   100% { transform: scale(1.8); opacity: 0; }
 }
+
+/* Hide Google Translate top banner */
+.goog-te-banner-frame { display: none !important; }
+.skiptranslate { display: none !important; }
+body { top: 0 !important; }

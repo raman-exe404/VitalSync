@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Bell, LogOut } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useNotif } from "@/hooks/useNotif";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const Navbar = () => {
   const { profile, signOut } = useAuth();
@@ -29,6 +30,7 @@ const Navbar = () => {
         )}
       </div>
       <div className="flex items-center gap-3">
+        <LanguageSelector />
         <Link to="/alerts" onClick={markAllRead}
           className="clay-card p-2.5 rounded-full hover:scale-105 transition-transform relative" aria-label="Notifications">
           <Bell className="w-5 h-5 text-muted-foreground" />
