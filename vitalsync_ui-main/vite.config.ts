@@ -39,9 +39,10 @@ export default defineConfig(({ mode }) => ({
         categories: ["health", "medical"]
       },
       workbox: {
-        // Cache app shell and static assets
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        // Cache API responses for offline fallback
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
