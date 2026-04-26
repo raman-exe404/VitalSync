@@ -95,17 +95,19 @@ export default function LanguageSelector() {
         onClick={() => setOpen(o => !o)}
         className="clay-card p-2.5 rounded-full hover:scale-105 transition-transform flex items-center gap-1.5 px-3"
         aria-label="Change language"
+        translate="no"
       >
         <Languages className="w-4 h-4 text-muted-foreground" />
-        <span className="text-xs font-body font-semibold text-foreground hidden sm:block">{currentLabel}</span>
+        <span className="text-xs font-body font-semibold text-foreground hidden sm:block" translate="no">{currentLabel}</span>
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 clay-card p-2 w-44 max-h-72 overflow-y-auto shadow-xl animate-fade-in">
+        <div className="absolute right-0 top-12 z-50 clay-card p-2 w-44 max-h-72 overflow-y-auto shadow-xl animate-fade-in" translate="no">
           {LANGUAGES.map(lang => (
             <button
               key={lang.code}
               onClick={() => changeLanguage(lang.code)}
+              translate="no"
               className={`w-full text-left px-3 py-2 rounded-lg text-sm font-body transition-colors hover:bg-muted flex items-center justify-between ${current === lang.code ? "bg-primary/10 text-primary font-semibold" : "text-foreground"}`}
             >
               {lang.label}
