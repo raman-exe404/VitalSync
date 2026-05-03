@@ -1,21 +1,34 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, User, MapPin, Phone, ArrowRight, ArrowLeft, HeartPulse, Stethoscope } from "lucide-react";
+import { Mail, Lock, User, MapPin, Phone, ArrowRight, ArrowLeft, HeartPulse, Stethoscope, Eye, EyeOff } from "lucide-react";
 import ClayBlobs from "@/components/ClayBlobs";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
+
 type Step = "account" | "profile";
 const GENOTYPES = ["AA", "AS", "SS", "SC", "CC"];
 const GENDERS = ["Male", "Female", "Other"];
+
+const GoogleIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+  </svg>
+);
 
 export default function Register() {
   const navigate = useNavigate();
   const { user, fetchProfile } = useAuth();
 
-  // If already authenticated (e.g. Google OAuth), skip to profile step
+  // Google OAuth users land here already authenticated — go straight to profile
   const [step, setStep] = useState<Step>(user ? "profile" : "account");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [userId, setUserId] = useState(user?.id ?? "");
@@ -28,17 +41,28 @@ export default function Register() {
   });
   const update = (f: string, v: string) => setForm(p => ({ ...p, [f]: v }));
 
-  // Step 1 — create auth account
   async function handleCreateAccount() {
     if (!email.trim()) return setError("Email is required");
     if (password.length < 6) return setError("Password must be at least 6 characters");
+    if (password !== confirmPassword) return setError("Passwords do not match");
     setLoading(true); setError("");
 
     const { data, error: err } = await supabase.auth.signUp({ email, password });
     setLoading(false);
-    if (err) return setError(err.message);
 
-    // autoconfirm is on — user is immediately available in session
+    if (err) {
+      // Already registered
+      if (err.message.toLowerCase().includes("already") || err.message.toLowerCase().includes("registered") || err.message.toLowerCase().includes("taken")) {
+        return setError("This email is already registered. Please sign in instead.");
+      }
+      return setError(err.message);
+    }
+
+    // Check if user already exists (Supabase returns user but no session for existing emails when autoconfirm is off)
+    if (data.user && !data.session && data.user.identities?.length === 0) {
+      return setError("This email is already registered. Please sign in instead.");
+    }
+
     const uid = data.user?.id ?? data.session?.user?.id;
     if (!uid) return setError("Sign up failed. Try again.");
     setUserId(uid);
@@ -54,13 +78,11 @@ export default function Register() {
     if (err) setError(err.message);
   }
 
-  // Step 2 — save profile
   async function handleSaveProfile() {
     if (!form.name.trim()) return setError("Full name is required");
     if (!form.emergency_contact.trim()) return setError("Emergency contact is required");
     setLoading(true); setError("");
 
-    // Fallback: get uid from active session (covers Google OAuth flow)
     let uid = userId;
     if (!uid) {
       const { data: { session } } = await supabase.auth.getSession();
@@ -82,10 +104,11 @@ export default function Register() {
 
     setLoading(false);
     if (err) return setError(err.message);
-    // Refresh profile in context so ProtectedRoute sees it before we navigate
     await fetchProfile(uid);
     navigate(form.role === "worker" ? "/doctor" : "/dashboard");
   }
+
+  const stepNum = step === "account" ? 1 : 2;
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
@@ -100,7 +123,7 @@ export default function Register() {
         {/* Step indicator */}
         <div className="flex items-center gap-2 mb-6">
           {[1, 2].map(n => (
-            <div key={n} className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${n <= (step === "account" ? 1 : 2) ? "bg-primary" : "bg-muted"}`} />
+            <div key={n} className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${n <= stepNum ? "bg-primary" : "bg-muted"}`} />
           ))}
         </div>
 
@@ -109,29 +132,12 @@ export default function Register() {
           <div className="space-y-4 animate-fade-in">
             <div className="text-center">
               <h2 className="font-heading text-xl font-bold text-foreground">Create Account</h2>
-              <p className="text-sm text-muted-foreground font-body mt-1">Sign up to get started</p>
+              <p className="text-sm text-muted-foreground font-body mt-1">Step 1 of 2 — Your credentials</p>
             </div>
 
-            {/* Google */}
-            <button onClick={handleGoogle}
-              className="clay-card w-full py-3 flex items-center justify-center gap-3 font-body font-semibold text-foreground hover:scale-[1.02] transition-transform">
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              Continue with Google
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted-foreground font-body">or</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
-
+            {/* Email */}
             <div>
-              <label className="font-body text-sm font-medium text-foreground mb-1.5 block">Email</label>
+              <label className="font-body text-sm font-medium text-foreground mb-1.5 block">Email *</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input type="email" value={email} onChange={e => setEmail(e.target.value)}
@@ -140,22 +146,62 @@ export default function Register() {
               </div>
             </div>
 
+            {/* Password */}
             <div>
-              <label className="font-body text-sm font-medium text-foreground mb-1.5 block">Password</label>
+              <label className="font-body text-sm font-medium text-foreground mb-1.5 block">Password *</label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleCreateAccount()}
-                  className="clay-input w-full pl-11 pr-4 py-3.5 font-body text-foreground placeholder:text-muted-foreground"
+                <input type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)}
+                  className="clay-input w-full pl-11 pr-11 py-3.5 font-body text-foreground placeholder:text-muted-foreground"
                   placeholder="Min. 6 characters" />
+                <button type="button" onClick={() => setShowPassword(p => !p)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
-            {error && <p className="text-sm text-destructive font-body">{error}</p>}
+            {/* Confirm Password */}
+            <div>
+              <label className="font-body text-sm font-medium text-foreground mb-1.5 block">Confirm Password *</label>
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input type={showConfirm ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleCreateAccount()}
+                  className="clay-input w-full pl-11 pr-11 py-3.5 font-body text-foreground placeholder:text-muted-foreground"
+                  placeholder="Re-enter password" />
+                <button type="button" onClick={() => setShowConfirm(p => !p)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="clay-card p-3 bg-destructive/5 border border-destructive/20 rounded-xl">
+                <p className="text-sm text-destructive font-body">{error}</p>
+                {error.includes("already registered") && (
+                  <Link to="/login" className="text-sm text-primary font-semibold underline mt-1 block">Sign in instead →</Link>
+                )}
+              </div>
+            )}
 
             <button onClick={handleCreateAccount} disabled={loading}
               className="clay-btn w-full py-3.5 text-base font-body font-bold flex items-center justify-center gap-2">
-              {loading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Processing...</> : <><span>Continue</span><ArrowRight className="w-4 h-4" /></>}
+              {loading
+                ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Processing...</>
+                : <><span>Continue</span><ArrowRight className="w-4 h-4" /></>}
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground font-body">or</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
+            <button onClick={handleGoogle}
+              className="clay-card w-full py-3 flex items-center justify-center gap-3 font-body font-semibold text-foreground hover:scale-[1.02] transition-transform">
+              <GoogleIcon /> Continue with Google
             </button>
 
             <p className="text-center text-sm text-muted-foreground font-body">
@@ -170,7 +216,7 @@ export default function Register() {
           <div className="space-y-4 animate-fade-in">
             <div className="text-center mb-2">
               <h2 className="font-heading text-xl font-bold text-foreground">Complete Your Profile</h2>
-              <p className="text-sm text-muted-foreground font-body mt-1">Tell us about yourself</p>
+              <p className="text-sm text-muted-foreground font-body mt-1">Step 2 of 2 — Tell us about yourself</p>
             </div>
 
             {/* Role */}
@@ -198,7 +244,7 @@ export default function Register() {
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input type="text" value={form.name} onChange={e => update("name", e.target.value)}
                   className="clay-input w-full pl-11 pr-4 py-3 font-body text-foreground placeholder:text-muted-foreground"
-                  placeholder="John Doe" />
+                  placeholder="John Doe" autoFocus />
               </div>
             </div>
 
@@ -258,14 +304,18 @@ export default function Register() {
             {error && <p className="text-sm text-destructive font-body">{error}</p>}
 
             <button onClick={handleSaveProfile} disabled={loading}
-              className="clay-btn w-full py-3.5 text-base font-body font-bold">
-              {loading ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Creating...</> : "Create Account 🎉"}
+              className="clay-btn w-full py-3.5 text-base font-body font-bold flex items-center justify-center gap-2">
+              {loading
+                ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Creating...</>
+                : "Create Account 🎉"}
             </button>
 
-            <button onClick={() => { setStep("account"); setError(""); }}
-              className="w-full flex items-center justify-center gap-1 text-sm text-muted-foreground font-body hover:text-foreground transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Back
-            </button>
+            {!user && (
+              <button onClick={() => { setStep("account"); setError(""); }}
+                className="w-full flex items-center justify-center gap-1 text-sm text-muted-foreground font-body hover:text-foreground transition-colors">
+                <ArrowLeft className="w-4 h-4" /> Back
+              </button>
+            )}
           </div>
         )}
       </div>
